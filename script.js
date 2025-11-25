@@ -3,7 +3,7 @@
   Based on Tone.js
 */
 
-// --- ГЕНЕРАЦИЯ ЗВЕЗД (Responsive Fix) ---
+// --- ГЕНЕРАЦИЯ ЗВЕЗД ---
 function generateStars() {
   const width = window.innerWidth; 
   const height = 2000; 
@@ -46,6 +46,7 @@ window.addEventListener('resize', () => {
 // --- AUDIO ENGINE ---
 
 let isAudioStarted = false;
+let isMuted = false; // Локальное состояние для логики Mute
 let noiseNode, autoFilterNode;
 let synthNode;
 let chimeDensity = 0.4;
@@ -53,6 +54,10 @@ let chimeDensity = 0.4;
 async function initAudio() {
   await Tone.start();
   console.log("Audio Context Started");
+  
+  // Устанавливаем общую громкость в -Infinity (тишина) перед стартом
+  // для плавного Fade In
+  Tone.Destination.volume.value = -Infinity;
 
   // --- 1. ATMOSPHERE ---
   const initialNoiseType = document.getElementById("type-wind").value;
@@ -114,29 +119,46 @@ async function initAudio() {
   loop.start(0);
 }
 
-// --- Кнопка включения ---
+// --- Кнопка включения (с плавным Fade In/Out) ---
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
   const panel = document.getElementById('settings-panel');
   
+  // Длительность затухания в секундах
+  const fadeDuration = 2; 
+
   if (!isAudioStarted) {
+    // ПЕРВЫЙ ЗАПУСК
     initAudio().then(() => {
       isAudioStarted = true;
-      btn.innerText = "🔇 Mute Audio";
+      isMuted = false;
+      
+      // Плавно поднимаем громкость до 0 dB
+      Tone.Destination.volume.rampTo(0, fadeDuration);
+      
+      btn.innerText = "🔇 Fade Out";
       btn.classList.add("active");
       panel.classList.remove("settings-hidden");
       panel.classList.add("settings-visible");
     });
   } else {
-    if (Tone.Destination.mute) {
-      Tone.Destination.mute = false;
-      btn.innerText = "🔇 Mute Audio";
+    if (isMuted) {
+      // UNMUTE (Включение звука)
+      // Плавно поднимаем громкость
+      Tone.Destination.volume.rampTo(0, fadeDuration);
+      
+      isMuted = false;
+      btn.innerText = "🔇 Fade Out";
       btn.classList.add("active");
-      panel.style.opacity = "1";
-      panel.style.pointerEvents = "auto";
+      panel.style.opacity = ""; // Сброс inline стилей, возвращаем управление классу
+      panel.style.pointerEvents = "";
     } else {
-      Tone.Destination.mute = true;
-      btn.innerText = "🔈 Resume Audio";
+      // MUTE (Выключение звука)
+      // Плавно опускаем громкость в тишину
+      Tone.Destination.volume.rampTo(-Infinity, fadeDuration);
+      
+      isMuted = true;
+      btn.innerText = "🔈 Fade In";
       btn.classList.remove("active");
       panel.style.opacity = "0.5";
       panel.style.pointerEvents = "none";

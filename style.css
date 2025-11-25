@@ -76,8 +76,8 @@ html, body {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.1);
   
-  /* ИЗМЕНЕНО: Настройки переходов для 3D эффекта */
-  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* 3D Переходы */
+  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
   
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -94,27 +94,33 @@ html, body {
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
-/* ИЗМЕНЕНО: Эффект отклонения (Idle state) */
+/* 
+   СОСТОЯНИЕ ПОКОЯ (Idle):
+   - rotateX(45deg) = Сильный наклон назад (в 3 раза больше чем 15deg)
+   - scale(0.9) = Чуть меньше визуально
+*/
 .settings-visible {
-  opacity: 0.85; /* Немного прозрачнее, когда не активно */
+  opacity: 0.8; 
   pointer-events: auto;
-  /* Perspective добавляет 3D глубину, rotateX наклоняет панель назад */
-  transform: perspective(1000px) rotateX(15deg) translateY(0) scale(0.95);
+  transform: perspective(1000px) rotateX(45deg) translateY(0) scale(0.9);
+  transform-origin: top center; /* Вращение от верха */
 }
 
-/* ИЗМЕНЕНО: Эффект наведения (Active state) */
+/* 
+   СОСТОЯНИЕ НАВЕДЕНИЯ (Hover):
+   - Выпрямляется в 0 градусов
+*/
 #settings-panel.settings-visible:hover {
   opacity: 1;
-  /* Возвращаем в прямое положение */
   transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
-  border-color: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.4);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
 }
 
 /* Состояние скрытия */
 .settings-hidden {
   opacity: 0;
   pointer-events: none !important;
-  /* Смещаем вниз, перебивая трансформацию visible */
   transform: translateY(30px) !important; 
 }
 
