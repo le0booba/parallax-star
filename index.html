@@ -7,6 +7,7 @@
   <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+  <!-- Подключаем Tone.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
   
@@ -29,16 +30,39 @@
       <button id="btn-audio" class="audio-btn">🔈 Start Experience</button>
     </div>
 
-    <!-- Панель настроек (скрыта до включения) -->
+    <!-- Панель настроек -->
     <div id="settings-panel" class="settings-hidden">
       
+      <!-- 1. Настройки Атмосферы -->
       <div class="control-group">
-        <label>Atmosphere (Wind)</label>
-        <input type="range" id="vol-wind" min="-60" max="0" value="-20">
+        <label>Atmosphere Type</label>
+        <select id="type-wind">
+          <option value="pink" selected>Wind (Pink Noise)</option>
+          <option value="brown">Deep Space (Brown)</option>
+          <option value="white">Rain/Static (White)</option>
+        </select>
       </div>
 
       <div class="control-group">
-        <label>Starlight (Chimes)</label>
+        <label>Atmosphere Volume</label>
+        <input type="range" id="vol-wind" min="-60" max="-5" value="-20">
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+
+      <!-- 2. Настройки Звезд -->
+      <div class="control-group">
+        <label>Starlight Sound</label>
+        <select id="type-synth">
+          <option value="fatsine" selected>Soft (Sine)</option>
+          <option value="triangle">Glassy (Triangle)</option>
+          <option value="square">Retro (Square)</option>
+          <option value="sawtooth">Sharp (Sawtooth)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Starlight Volume</label>
         <input type="range" id="vol-synth" min="-60" max="-5" value="-12">
       </div>
 
