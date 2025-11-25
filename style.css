@@ -8,10 +8,10 @@ html, body {
   font-family: "lato", sans-serif;
 }
 
-/* --- Заголовок (Перемещен наверх) --- */
+/* --- Заголовок --- */
 #title {
   position: absolute;
-  top: 30px; /* Отступ сверху */
+  top: 30px;
   left: 0;
   right: 0;
   color: #FFF;
@@ -22,7 +22,7 @@ html, body {
   margin-top: 0;
   padding-left: 10px;
   z-index: 100;
-  pointer-events: none; /* Пропускает клики сквозь текст */
+  pointer-events: none; 
 }
 
 #title span {
@@ -34,7 +34,7 @@ html, body {
 
 /* --- Аудио кнопка --- */
 #audio-control-container {
-  margin-top: 20px; /* Уменьшен отступ, так как блок теперь наверху */
+  margin-top: 20px;
   margin-bottom: 20px;
   pointer-events: auto;
 }
@@ -75,7 +75,10 @@ html, body {
   border-radius: 15px;
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.1);
-  transition: opacity 1s ease, transform 1s ease;
+  
+  /* ИЗМЕНЕНО: Настройки переходов для 3D эффекта */
+  transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   pointer-events: auto;
@@ -84,28 +87,41 @@ html, body {
   box-sizing: border-box;
   width: 320px;
   max-width: 90vw; 
-  max-height: 65vh; /* Увеличена высота, т.к. сверху больше места */
+  max-height: 65vh; 
   overflow-y: auto;
   
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
-#settings-panel::-webkit-scrollbar { width: 6px; }
-#settings-panel::-webkit-scrollbar-track { background: transparent; }
-#settings-panel::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
+/* ИЗМЕНЕНО: Эффект отклонения (Idle state) */
+.settings-visible {
+  opacity: 0.85; /* Немного прозрачнее, когда не активно */
+  pointer-events: auto;
+  /* Perspective добавляет 3D глубину, rotateX наклоняет панель назад */
+  transform: perspective(1000px) rotateX(15deg) translateY(0) scale(0.95);
+}
 
+/* ИЗМЕНЕНО: Эффект наведения (Active state) */
+#settings-panel.settings-visible:hover {
+  opacity: 1;
+  /* Возвращаем в прямое положение */
+  transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* Состояние скрытия */
 .settings-hidden {
   opacity: 0;
   pointer-events: none !important;
-  transform: translateY(20px);
+  /* Смещаем вниз, перебивая трансформацию visible */
+  transform: translateY(30px) !important; 
 }
 
-.settings-visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-}
+/* Скроллбар */
+#settings-panel::-webkit-scrollbar { width: 6px; }
+#settings-panel::-webkit-scrollbar-track { background: transparent; }
+#settings-panel::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
 
 .control-group { margin-bottom: 15px; }
 .control-group:last-child { margin-bottom: 0; }
@@ -134,7 +150,7 @@ select {
 }
 select option { background: #1b2735; color: #fff; }
 
-/* --- Range Slider (Увеличенная область захвата) --- */
+/* --- Range Slider --- */
 input[type=range] {
   -webkit-appearance: none; 
   width: 100%; 
@@ -143,12 +159,12 @@ input[type=range] {
 
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  height: 24px; /* Увеличено с 14px */
-  width: 24px;  /* Увеличено с 14px */
+  height: 24px;
+  width: 24px;
   border-radius: 50%;
   background: #ffffff;
   cursor: pointer;
-  margin-top: -11px; /* (2px трек - 24px бегунок) / 2 = -11px */
+  margin-top: -11px; 
   box-shadow: 0 0 10px #fff;
 }
 
@@ -162,7 +178,7 @@ input[type=range]::-webkit-slider-runnable-track {
 
 input[type=range]:focus { outline: none; }
 
-/* Базовые стили для звезд */
+/* Звезды и анимация */
 #stars, #stars2, #stars3 {
   position: absolute;
   top: 0;
@@ -183,7 +199,6 @@ input[type=range]:focus { outline: none; }
   background: transparent;
 }
 
-/* Анимация */
 @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
 
 #stars { animation: animStar 50s linear infinite; }
