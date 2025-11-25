@@ -1,14 +1,58 @@
 /*
-  CINVA Generative Audio
+  CINVA Generative Audio & Visuals
   Based on Tone.js
 */
 
-let isAudioStarted = false;
+// --- ГЕНЕРАЦИЯ ЗВЕЗД (Responsive Fix) ---
+function generateStars() {
+  const width = window.innerWidth; // Берем реальную ширину экрана
+  const height = 2000; // Высота цикла анимации (как в CSS)
+  
+  // Функция для создания строки box-shadow
+  const createShadows = (count) => {
+    let shadows = [];
+    for (let i = 0; i < count; i++) {
+      const x = Math.floor(Math.random() * width);
+      const y = Math.floor(Math.random() * height);
+      shadows.push(`${x}px ${y}px #FFF`);
+    }
+    return shadows.join(', ');
+  };
 
-// Глобальные переменные для доступа из контролов
-let noiseNode;
+  // Удаляем старые стили, если они есть
+  const oldStyle = document.getElementById('dynamic-star-style');
+  if (oldStyle) oldStyle.remove();
+
+  // Генерируем новые
+  const smallStars = createShadows(700);
+  const mediumStars = createShadows(200);
+  const bigStars = createShadows(100);
+
+  const style = document.createElement('style');
+  style.id = 'dynamic-star-style';
+  style.innerHTML = `
+    #stars, #stars:after { box-shadow: ${smallStars}; width: 1px; height: 1px; }
+    #stars2, #stars2:after { box-shadow: ${mediumStars}; width: 2px; height: 2px; }
+    #stars3, #stars3:after { box-shadow: ${bigStars}; width: 3px; height: 3px; }
+  `;
+  document.head.appendChild(style);
+}
+
+// Генерируем звезды при запуске и при изменении размера окна
+generateStars();
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(generateStars, 500); // Ждем окончания ресайза
+});
+
+
+// --- AUDIO ENGINE ---
+
+let isAudioStarted = false;
+let noiseNode, autoFilterNode;
 let synthNode;
-let chimeDensity = 0.4; // Вероятность звучания
+let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
@@ -18,18 +62,28 @@ async function initAudio() {
   const initialNoiseType = document.getElementById("type-wind").value;
   const noise = new Tone.Noise(initialNoiseType);
   
+  // Фильтр для движения звука
   const autoFilter = new Tone.AutoFilter({
-    frequency: "8m",
+    frequency: "8m", // Скорость (будет меняться слайдером)
     baseFrequency: 200,
-    octaves: 2.6
+    octaves: 2.6 // Глубина (будет меняться слайдером)
   }).toDestination();
   
   noise.connect(autoFilter);
   noise.volume.value = document.getElementById("vol-wind").value; 
+  
+  // Применяем начальные значения со слайдеров
+  const startSpeed = document.getElementById("param-wind-speed").value;
+  const startDepth = document.getElementById("param-wind-depth").value;
+  
+  autoFilter.frequency.value = startSpeed; 
+  autoFilter.octaves = startDepth;
+
   autoFilter.start();
   noise.start();
   
   noiseNode = noise;
+  autoFilterNode = autoFilter;
 
   // --- 2. STARLIGHT (Chimes) ---
   const reverb = new Tone.Reverb({
@@ -96,39 +150,47 @@ document.getElementById('btn-audio').addEventListener('click', function() {
   }
 });
 
-// --- ОБРАБОТЧИКИ НАСТРОЕК ---
+// --- ОБРАБОТЧИКИ НАСТРОЕК (Listeners) ---
 
-// 1. Изменение типа Ветра (Noise Type)
+// 1. Тип Ветра
 document.getElementById('type-wind').addEventListener('change', function(e) {
-  if(noiseNode) {
-    noiseNode.type = e.target.value; 
-  }
+  if(noiseNode) noiseNode.type = e.target.value; 
 });
 
-// 2. Изменение громкости Ветра
+// 2. Громкость Ветра
 document.getElementById('vol-wind').addEventListener('input', function(e) {
-  if(noiseNode) {
-    noiseNode.volume.value = parseFloat(e.target.value);
+  if(noiseNode) noiseNode.volume.value = parseFloat(e.target.value);
+});
+
+// 3. [NEW] Скорость Ветра (Turbulence)
+document.getElementById('param-wind-speed').addEventListener('input', function(e) {
+  if(autoFilterNode) {
+    // Частота фильтра в Гц (чем больше число, тем быстрее "плавает" звук)
+    autoFilterNode.frequency.value = parseFloat(e.target.value);
   }
 });
 
-// 3. Изменение типа Синтезатора (Starlight Sound)
+// 4. [NEW] Глубина Ветра (Depth)
+document.getElementById('param-wind-depth').addEventListener('input', function(e) {
+  if(autoFilterNode) {
+    // Октавы фильтра (диапазон изменений)
+    autoFilterNode.octaves = parseFloat(e.target.value);
+  }
+});
+
+// 5. Тип Синтезатора
 document.getElementById('type-synth').addEventListener('change', function(e) {
   if(synthNode) {
-    synthNode.set({
-      oscillator: { type: e.target.value }
-    });
+    synthNode.set({ oscillator: { type: e.target.value } });
   }
 });
 
-// 4. Изменение громкости Синтезатора
+// 6. Громкость Синтезатора
 document.getElementById('vol-synth').addEventListener('input', function(e) {
-  if(synthNode) {
-    synthNode.volume.value = parseFloat(e.target.value);
-  }
+  if(synthNode) synthNode.volume.value = parseFloat(e.target.value);
 });
 
-// 5. Плотность нот
+// 7. Плотность нот
 document.getElementById('param-density').addEventListener('input', function(e) {
   chimeDensity = parseFloat(e.target.value);
 });
