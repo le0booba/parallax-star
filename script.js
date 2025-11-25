@@ -43,7 +43,7 @@ window.addEventListener('resize', () => {
 });
 
 
-// --- AUDIO ENGINE ---
+// --- AUDIO ENGINE (Optimized for Mobile) ---
 
 let isAudioStarted = false;
 let isMuted = false; 
@@ -53,6 +53,11 @@ let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
+  
+  // ИСПРАВЛЕНИЕ ТРЕСКА 1: Увеличиваем Lookahead (буфер предзагрузки)
+  // По умолчанию 0.03, увеличиваем до 0.1 для стабильности
+  Tone.context.lookAhead = 0.1;
+  
   Tone.Destination.volume.value = -60; 
   console.log("Audio Context Started");
 
@@ -89,7 +94,10 @@ async function initAudio() {
 
   const initialSynthType = document.getElementById("type-synth").value;
 
+  // ИСПРАВЛЕНИЕ ТРЕСКА 2: Ограничение полифонии (maxPolyphony)
+  // Ограничиваем до 4 голосов, чтобы снизить нагрузку на CPU телефона
   const synth = new Tone.PolySynth(Tone.Synth, {
+    maxPolyphony: 4, 
     oscillator: { type: initialSynthType }, 
     envelope: {
       attack: 0.02,
@@ -116,7 +124,7 @@ async function initAudio() {
   loop.start(0);
 }
 
-// --- Кнопка включения (с плавным FADE) ---
+// --- Кнопка включения ---
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
   const panel = document.getElementById('settings-panel');
@@ -146,34 +154,29 @@ document.getElementById('btn-audio').addEventListener('click', function() {
       btn.classList.remove("active");
       panel.classList.remove("settings-visible");
       panel.classList.add("settings-hidden");
-      panel.classList.remove("expanded"); // Сбрасываем расширенное состояние при закрытии
+      panel.classList.remove("expanded");
     }
   }
 });
 
-// --- МОБИЛЬНАЯ ЛОГИКА: Клик по панели ---
+// --- МОБИЛЬНАЯ ЛОГИКА ---
 const settingsPanel = document.getElementById('settings-panel');
 
 settingsPanel.addEventListener('click', function(e) {
-  // Если панель еще не расширена, мы её расширяем
   if (!this.classList.contains('expanded')) {
     this.classList.add('expanded');
-    e.stopPropagation(); // Останавливаем всплытие, чтобы не сработал глобальный клик
+    e.stopPropagation();
   }
-  // Если уже расширена, клики внутри (по инпутам) работают штатно благодаря CSS pointer-events: auto
 });
 
-// Клик вне панели сворачивает её
 document.addEventListener('click', function(e) {
   const panel = document.getElementById('settings-panel');
   const audioBtn = document.getElementById('btn-audio');
   
-  // Если клик НЕ по панели И НЕ по кнопке аудио
   if (!panel.contains(e.target) && !audioBtn.contains(e.target)) {
     panel.classList.remove('expanded');
   }
 });
-
 
 // --- ОБРАБОТЧИКИ ПАРАМЕТРОВ ---
 
