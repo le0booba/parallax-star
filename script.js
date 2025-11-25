@@ -41,6 +41,7 @@ async function initAudio() {
   // Берем начальный тип осциллятора из HTML селекта
   const initialSynthType = document.getElementById("type-synth").value;
 
+  // PolySynth создает полифонический синтезатор
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: initialSynthType }, 
     envelope: {

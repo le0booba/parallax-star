@@ -7,7 +7,6 @@
   <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
-  <!-- Подключаем Tone.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
   
@@ -25,53 +24,51 @@
       CINCYVAKA
     </span>
     
-    <!-- Кнопка включения -->
-    <div id="audio-control-container">
-      <button id="btn-audio" class="audio-btn">🔈 Start Experience</button>
-    </div>
-
-    <!-- Панель настроек -->
-    <div id="settings-panel" class="settings-hidden">
+    <!-- Центральный контейнер управления -->
+    <div id="interface-container">
       
-      <!-- 1. ТРЕУГОЛЬНАЯ ОБЛАСТЬ: Настройки типа Атмосферы -->
-      <div id="atmosphere-triangle-area">
-        <label>Atmosphere Type</label>
-        <select id="type-wind">
-          <option value="pink" selected>Wind (Pink)</option>
-          <option value="brown">Deep (Brown)</option>
-          <option value="white">Rain (White)</option>
-        </select>
+      <!-- Кнопка (Вершина пирамиды) -->
+      <div id="audio-control-container">
+        <button id="btn-audio" class="audio-btn">🔈 Start Experience</button>
       </div>
 
-      <!-- Громкость атмосферы (вне треугольника для удобства) -->
-      <div class="control-group">
-        <label>Atmosphere Volume</label>
-        <input type="range" id="vol-wind" min="-60" max="-5" value="-20">
+      <!-- Панель настроек (Основание пирамиды) -->
+      <div id="settings-panel" class="settings-hidden">
+        
+        <!-- 1. Атмосфера -->
+        <div class="control-group">
+          <label>Atmosphere</label>
+          <select id="type-wind">
+            <option value="pink" selected>Wind (Pink)</option>
+            <option value="brown">Deep (Brown)</option>
+            <option value="white">Rain (White)</option>
+          </select>
+          <input type="range" id="vol-wind" min="-60" max="-5" value="-20">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 2. Звезды -->
+        <div class="control-group">
+          <label>Starlight</label>
+          <select id="type-synth">
+            <option value="fatsine" selected>Soft (Sine)</option>
+            <option value="triangle">Glassy (Triangle)</option>
+            <option value="amsine">Ethereal (AM Sine)</option>
+            <option value="fmtriangle">Chime (FM Tri)</option>
+          </select>
+          <input type="range" id="vol-synth" min="-60" max="-5" value="-12">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 3. Плотность -->
+        <div class="control-group">
+          <label>Activity Density</label>
+          <input type="range" id="param-density" min="0" max="1" step="0.05" value="0.4">
+        </div>
+
       </div>
-
-      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
-
-      <!-- 2. Настройки Звезд (Новые мягкие звуки) -->
-      <div class="control-group">
-        <label>Starlight Sound</label>
-        <select id="type-synth">
-          <option value="fatsine" selected>Soft (Fat Sine)</option>
-          <option value="triangle">Glassy (Triangle)</option>
-          <option value="amsine">Ethereal (AM Sine)</option>
-          <option value="fmsine">Pure (FM Sine)</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label>Starlight Volume</label>
-        <input type="range" id="vol-synth" min="-60" max="-5" value="-12">
-      </div>
-
-      <div class="control-group">
-        <label>Density (Activity)</label>
-        <input type="range" id="param-density" min="0" max="1" step="0.05" value="0.4">
-      </div>
-
     </div>
   </div>
 
