@@ -147,32 +147,30 @@ html, body {
   margin: 15px 0;
 }
 
-/* --- МОБИЛЬНАЯ ОПТИМИЗАЦИЯ (Компактность) --- */
+/* --- МОБИЛЬНАЯ ОПТИМИЗАЦИЯ --- */
 @media (max-width: 768px) {
   #settings-panel {
-    width: 280px; /* Чуть уже */
-    padding: 15px; /* Меньше внутренний отступ */
+    width: 280px;
+    padding: 15px; 
   }
 
   .settings-visible {
-    /* Увеличенный масштаб в свернутом виде для удобства нажатия */
     transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.6);
   }
 
   .control-group {
-    margin-bottom: 8px; /* Уплотняем отступы между элементами */
+    margin-bottom: 8px;
   }
 
   .control-group label {
     margin-bottom: 4px;
-    font-size: 9px; /* Чуть меньше шрифт */
+    font-size: 9px; 
   }
 
   .panel-divider {
-    margin: 8px 0; /* Меньше отступ у линии */
+    margin: 8px 0; 
   }
   
-  /* Кнопка аудио поменьше на мобильных */
   .audio-btn {
     padding: 10px 20px;
     font-size: 10px;

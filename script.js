@@ -53,7 +53,9 @@ let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
-  // Настройка буферизации для уменьшения треска при нагрузке
+  
+  // Оптимизация: lookAhead уменьшает задержки, но не спасает от фонового режима.
+  // Для мобильных важен именно suspend() в visibilitychange.
   Tone.context.lookAhead = 0.1; 
   
   Tone.Destination.volume.value = -60; 
@@ -85,9 +87,11 @@ async function initAudio() {
   autoFilterNode = autoFilter;
 
   // --- 2. STARLIGHT ---
+  // Оптимизация Reverb: preDelay 0 снижает нагрузку
   const reverb = new Tone.Reverb({
     decay: 10,
-    wet: 0.6
+    wet: 0.6,
+    preDelay: 0 
   }).toDestination();
 
   const initialSynthType = document.getElementById("type-synth").value;
@@ -119,18 +123,30 @@ async function initAudio() {
   loop.start(0);
 }
 
-// --- ИСПРАВЛЕНИЕ ТРЕСКА НА МОБИЛЬНЫХ ---
-// Когда вкладка скрыта, мы ставим Transport на паузу.
-// Это предотвращает накопление буфера и "глитчи" при троттлинге CPU.
-document.addEventListener("visibilitychange", () => {
+// --- ИСПРАВЛЕНИЕ ТРЕСКА НА МОБИЛЬНЫХ (SUSPEND METHOD) ---
+document.addEventListener("visibilitychange", async () => {
   if (document.hidden) {
-    if (isAudioStarted) {
-      Tone.Transport.pause();
+    // Сворачивание:
+    // 1. Быстро глушим выход (на всякий случай)
+    Tone.Destination.mute = true;
+    
+    // 2. Полностью останавливаем AudioContext. 
+    // Это отключает обработку звука CPU и прекращает треск.
+    if (Tone.context.state === 'running') {
+      await Tone.context.suspend();
     }
   } else {
-    // Если мы вернулись и звук был включен (не на Mute кнопке), возобновляем
-    if (isAudioStarted && !isMuted) {
-      Tone.Transport.start();
+    // Возвращение:
+    if (isAudioStarted) {
+      // 1. Возобновляем контекст
+      if (Tone.context.state === 'suspended') {
+        await Tone.context.resume();
+      }
+      
+      // 2. Включаем звук только если пользователь не нажимал Mute
+      if (!isMuted) {
+        Tone.Destination.mute = false;
+      }
     }
   }
 });
@@ -153,7 +169,9 @@ document.getElementById('btn-audio').addEventListener('click', function() {
     });
   } else {
     if (isMuted) {
-      Tone.Transport.start(); // Убеждаемся, что транспорт запущен
+      // Unmute
+      if(Tone.context.state === 'suspended') Tone.context.resume();
+      Tone.Destination.mute = false; // Снимаем мьют сразу перед фейдом
       Tone.Destination.volume.rampTo(0, 3);
       isMuted = false;
       btn.innerText = "🔇 Fade Out";
@@ -161,6 +179,7 @@ document.getElementById('btn-audio').addEventListener('click', function() {
       panel.classList.remove("settings-hidden");
       panel.classList.add("settings-visible");
     } else {
+      // Mute
       Tone.Destination.volume.rampTo(-Infinity, 2);
       isMuted = true;
       btn.innerText = "🔈 Fade In";
@@ -168,11 +187,6 @@ document.getElementById('btn-audio').addEventListener('click', function() {
       panel.classList.remove("settings-visible");
       panel.classList.add("settings-hidden");
       panel.classList.remove("expanded");
-      
-      // Через 2 секунды (после фейда) можно запаузить транспорт для экономии ресурсов
-      setTimeout(() => {
-        if(isMuted) Tone.Transport.pause();
-      }, 2000);
     }
   }
 });
