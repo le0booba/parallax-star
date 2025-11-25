@@ -74,17 +74,15 @@ html, body {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.1);
   
-  /* Настройки анимации трансформации */
   transition: 
     opacity 0.6s ease, 
-    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), /* Плавный "пружинящий" эффект */
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
     border-color 0.3s ease;
   
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   pointer-events: auto;
   
-  /* Важно: точка трансформации сверху по центру */
   transform-origin: top center;
   
   box-sizing: border-box;
@@ -97,21 +95,49 @@ html, body {
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
-/* Состояние ПОКОЯ (когда мышь НЕ наведена) */
+/* 
+   ЛОГИКА ВЗАИМОДЕЙСТВИЯ:
+   1. .settings-visible (Idle) - панель свернута.
+   2. .settings-visible:hover (Desktop) - разворачивается при наведении.
+   3. .settings-visible.expanded (Mobile) - разворачивается при клике (класс добавляется JS).
+*/
+
+/* Состояние ПОКОЯ */
 .settings-visible {
-  opacity: 0.5; /* Полупрозрачность */
+  opacity: 0.5;
   pointer-events: auto;
-  /* Сильное уменьшение (0.35) и наклон */
+  cursor: pointer; /* Показываем, что можно нажать */
   transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.35);
 }
 
-/* Состояние АКТИВНОСТИ (когда мышь НАВЕДЕНА) */
-#settings-panel.settings-visible:hover {
+/* Блокировка инпутов в состоянии покоя */
+/* Если панель видима, но НЕ имеет класса expanded (и мышь не наведена - для десктопа), блокируем контент */
+.settings-visible:not(.expanded) .panel-content {
+  pointer-events: none; 
+}
+
+/* Увеличение для МОБИЛЬНЫХ в состоянии покоя */
+@media (max-width: 768px) {
+  .settings-visible {
+    /* Чуть больше (0.6), чтобы было удобно нажать пальцем */
+    transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.6);
+  }
+}
+
+/* Состояние АКТИВНОСТИ (Hover или JS Class .expanded) */
+#settings-panel.settings-visible:hover,
+#settings-panel.settings-visible.expanded {
   opacity: 1;
-  /* Возврат к полному размеру */
   transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
   border-color: rgba(255,255,255,0.4);
   background: rgba(0, 0, 0, 0.6);
+  cursor: default;
+}
+
+/* Разблокировка контента при активности */
+#settings-panel.settings-visible:hover .panel-content,
+#settings-panel.settings-visible.expanded .panel-content {
+  pointer-events: auto;
 }
 
 .settings-hidden {

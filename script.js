@@ -46,17 +46,14 @@ window.addEventListener('resize', () => {
 // --- AUDIO ENGINE ---
 
 let isAudioStarted = false;
-let isMuted = false; // Локальное состояние для плавного перехода
+let isMuted = false; 
 let noiseNode, autoFilterNode;
 let synthNode;
 let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
-  
-  // Устанавливаем мастер-громкость в минимум перед стартом для фейда
   Tone.Destination.volume.value = -60; 
-
   console.log("Audio Context Started");
 
   // --- 1. ATMOSPHERE ---
@@ -119,13 +116,12 @@ async function initAudio() {
   loop.start(0);
 }
 
-// --- Кнопка включения (с плавным FADE IN / FADE OUT) ---
+// --- Кнопка включения (с плавным FADE) ---
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
   const panel = document.getElementById('settings-panel');
   
   if (!isAudioStarted) {
-    // ПЕРВЫЙ ЗАПУСК
     initAudio().then(() => {
       isAudioStarted = true;
       isMuted = false;
@@ -133,35 +129,53 @@ document.getElementById('btn-audio').addEventListener('click', function() {
       btn.classList.add("active");
       panel.classList.remove("settings-hidden");
       panel.classList.add("settings-visible");
-      
-      // Плавное появление (3 секунды) до 0 dB (нормальная громкость)
       Tone.Destination.volume.rampTo(0, 3);
     });
   } else {
-    // ПЕРЕКЛЮЧЕНИЕ СОСТОЯНИЯ
     if (isMuted) {
-      // UNMUTE: Плавное включение
-      Tone.Destination.volume.rampTo(0, 3); // 3 секунды на возврат громкости
+      Tone.Destination.volume.rampTo(0, 3);
       isMuted = false;
       btn.innerText = "🔇 Fade Out";
       btn.classList.add("active");
-      // Разблокируем панель
       panel.classList.remove("settings-hidden");
       panel.classList.add("settings-visible");
     } else {
-      // MUTE: Плавное выключение
-      Tone.Destination.volume.rampTo(-Infinity, 2); // 2 секунды на затухание
+      Tone.Destination.volume.rampTo(-Infinity, 2);
       isMuted = true;
       btn.innerText = "🔈 Fade In";
       btn.classList.remove("active");
-      // Прячем панель
       panel.classList.remove("settings-visible");
       panel.classList.add("settings-hidden");
+      panel.classList.remove("expanded"); // Сбрасываем расширенное состояние при закрытии
     }
   }
 });
 
-// --- ОБРАБОТЧИКИ НАСТРОЕК ---
+// --- МОБИЛЬНАЯ ЛОГИКА: Клик по панели ---
+const settingsPanel = document.getElementById('settings-panel');
+
+settingsPanel.addEventListener('click', function(e) {
+  // Если панель еще не расширена, мы её расширяем
+  if (!this.classList.contains('expanded')) {
+    this.classList.add('expanded');
+    e.stopPropagation(); // Останавливаем всплытие, чтобы не сработал глобальный клик
+  }
+  // Если уже расширена, клики внутри (по инпутам) работают штатно благодаря CSS pointer-events: auto
+});
+
+// Клик вне панели сворачивает её
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('settings-panel');
+  const audioBtn = document.getElementById('btn-audio');
+  
+  // Если клик НЕ по панели И НЕ по кнопке аудио
+  if (!panel.contains(e.target) && !audioBtn.contains(e.target)) {
+    panel.classList.remove('expanded');
+  }
+});
+
+
+// --- ОБРАБОТЧИКИ ПАРАМЕТРОВ ---
 
 document.getElementById('type-wind').addEventListener('change', function(e) {
   if(noiseNode) noiseNode.type = e.target.value; 
