@@ -15,7 +15,6 @@ async function initAudio() {
   console.log("Audio Context Started");
 
   // --- 1. ATMOSPHERE (Wind / Drone) ---
-  // Берем начальный тип из HTML селекта
   const initialNoiseType = document.getElementById("type-wind").value;
   const noise = new Tone.Noise(initialNoiseType);
   
@@ -38,10 +37,8 @@ async function initAudio() {
     wet: 0.6
   }).toDestination();
 
-  // Берем начальный тип осциллятора из HTML селекта
   const initialSynthType = document.getElementById("type-synth").value;
 
-  // PolySynth создает полифонический синтезатор
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: initialSynthType }, 
     envelope: {
@@ -104,7 +101,7 @@ document.getElementById('btn-audio').addEventListener('click', function() {
 // 1. Изменение типа Ветра (Noise Type)
 document.getElementById('type-wind').addEventListener('change', function(e) {
   if(noiseNode) {
-    noiseNode.type = e.target.value; // pink, brown, white
+    noiseNode.type = e.target.value; 
   }
 });
 
@@ -118,7 +115,6 @@ document.getElementById('vol-wind').addEventListener('input', function(e) {
 // 3. Изменение типа Синтезатора (Starlight Sound)
 document.getElementById('type-synth').addEventListener('change', function(e) {
   if(synthNode) {
-    // PolySynth меняет тип осциллятора через set
     synthNode.set({
       oscillator: { type: e.target.value }
     });
