@@ -5,10 +5,9 @@
 
 // --- ГЕНЕРАЦИЯ ЗВЕЗД (Responsive Fix) ---
 function generateStars() {
-  const width = window.innerWidth; // Берем реальную ширину экрана
-  const height = 2000; // Высота цикла анимации (как в CSS)
+  const width = window.innerWidth; 
+  const height = 2000; 
   
-  // Функция для создания строки box-shadow
   const createShadows = (count) => {
     let shadows = [];
     for (let i = 0; i < count; i++) {
@@ -19,11 +18,9 @@ function generateStars() {
     return shadows.join(', ');
   };
 
-  // Удаляем старые стили, если они есть
   const oldStyle = document.getElementById('dynamic-star-style');
   if (oldStyle) oldStyle.remove();
 
-  // Генерируем новые
   const smallStars = createShadows(700);
   const mediumStars = createShadows(200);
   const bigStars = createShadows(100);
@@ -38,12 +35,11 @@ function generateStars() {
   document.head.appendChild(style);
 }
 
-// Генерируем звезды при запуске и при изменении размера окна
 generateStars();
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(generateStars, 500); // Ждем окончания ресайза
+  resizeTimer = setTimeout(generateStars, 500);
 });
 
 
@@ -58,21 +54,19 @@ async function initAudio() {
   await Tone.start();
   console.log("Audio Context Started");
 
-  // --- 1. ATMOSPHERE (Wind / Drone) ---
+  // --- 1. ATMOSPHERE ---
   const initialNoiseType = document.getElementById("type-wind").value;
   const noise = new Tone.Noise(initialNoiseType);
   
-  // Фильтр для движения звука
   const autoFilter = new Tone.AutoFilter({
-    frequency: "8m", // Скорость (будет меняться слайдером)
+    frequency: "8m", 
     baseFrequency: 200,
-    octaves: 2.6 // Глубина (будет меняться слайдером)
+    octaves: 2.6 
   }).toDestination();
   
   noise.connect(autoFilter);
   noise.volume.value = document.getElementById("vol-wind").value; 
   
-  // Применяем начальные значения со слайдеров
   const startSpeed = document.getElementById("param-wind-speed").value;
   const startDepth = document.getElementById("param-wind-depth").value;
   
@@ -85,7 +79,7 @@ async function initAudio() {
   noiseNode = noise;
   autoFilterNode = autoFilter;
 
-  // --- 2. STARLIGHT (Chimes) ---
+  // --- 2. STARLIGHT ---
   const reverb = new Tone.Reverb({
     decay: 10,
     wet: 0.6
@@ -150,7 +144,7 @@ document.getElementById('btn-audio').addEventListener('click', function() {
   }
 });
 
-// --- ОБРАБОТЧИКИ НАСТРОЕК (Listeners) ---
+// --- ОБРАБОТЧИКИ НАСТРОЕК ---
 
 // 1. Тип Ветра
 document.getElementById('type-wind').addEventListener('change', function(e) {
@@ -162,18 +156,16 @@ document.getElementById('vol-wind').addEventListener('input', function(e) {
   if(noiseNode) noiseNode.volume.value = parseFloat(e.target.value);
 });
 
-// 3. [NEW] Скорость Ветра (Turbulence)
+// 3. Скорость Ветра
 document.getElementById('param-wind-speed').addEventListener('input', function(e) {
   if(autoFilterNode) {
-    // Частота фильтра в Гц (чем больше число, тем быстрее "плавает" звук)
     autoFilterNode.frequency.value = parseFloat(e.target.value);
   }
 });
 
-// 4. [NEW] Глубина Ветра (Depth)
+// 4. Глубина Ветра
 document.getElementById('param-wind-depth').addEventListener('input', function(e) {
   if(autoFilterNode) {
-    // Октавы фильтра (диапазон изменений)
     autoFilterNode.octaves = parseFloat(e.target.value);
   }
 });
