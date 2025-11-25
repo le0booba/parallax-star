@@ -33,16 +33,17 @@
     <!-- Панель настроек -->
     <div id="settings-panel" class="settings-hidden">
       
-      <!-- 1. Настройки Атмосферы -->
-      <div class="control-group">
+      <!-- 1. ТРЕУГОЛЬНАЯ ОБЛАСТЬ: Настройки типа Атмосферы -->
+      <div id="atmosphere-triangle-area">
         <label>Atmosphere Type</label>
         <select id="type-wind">
-          <option value="pink" selected>Wind (Pink Noise)</option>
-          <option value="brown">Deep Space (Brown)</option>
-          <option value="white">Rain/Static (White)</option>
+          <option value="pink" selected>Wind (Pink)</option>
+          <option value="brown">Deep (Brown)</option>
+          <option value="white">Rain (White)</option>
         </select>
       </div>
 
+      <!-- Громкость атмосферы (вне треугольника для удобства) -->
       <div class="control-group">
         <label>Atmosphere Volume</label>
         <input type="range" id="vol-wind" min="-60" max="-5" value="-20">
@@ -50,14 +51,14 @@
 
       <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
 
-      <!-- 2. Настройки Звезд -->
+      <!-- 2. Настройки Звезд (Новые мягкие звуки) -->
       <div class="control-group">
         <label>Starlight Sound</label>
         <select id="type-synth">
-          <option value="fatsine" selected>Soft (Sine)</option>
+          <option value="fatsine" selected>Soft (Fat Sine)</option>
           <option value="triangle">Glassy (Triangle)</option>
-          <option value="square">Retro (Square)</option>
-          <option value="sawtooth">Sharp (Sawtooth)</option>
+          <option value="amsine">Ethereal (AM Sine)</option>
+          <option value="fmsine">Pure (FM Sine)</option>
         </select>
       </div>
 
