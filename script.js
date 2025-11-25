@@ -46,18 +46,18 @@ window.addEventListener('resize', () => {
 // --- AUDIO ENGINE ---
 
 let isAudioStarted = false;
-let isMuted = false; // Локальное состояние для логики Mute
+let isMuted = false; // Локальное состояние для плавного перехода
 let noiseNode, autoFilterNode;
 let synthNode;
 let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
-  console.log("Audio Context Started");
   
-  // Устанавливаем общую громкость в -Infinity (тишина) перед стартом
-  // для плавного Fade In
-  Tone.Destination.volume.value = -Infinity;
+  // Устанавливаем мастер-громкость в минимум перед стартом для фейда
+  Tone.Destination.volume.value = -60; 
+
+  console.log("Audio Context Started");
 
   // --- 1. ATMOSPHERE ---
   const initialNoiseType = document.getElementById("type-wind").value;
@@ -119,92 +119,80 @@ async function initAudio() {
   loop.start(0);
 }
 
-// --- Кнопка включения (с плавным Fade In/Out) ---
+// --- Кнопка включения (с плавным FADE IN / FADE OUT) ---
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
   const panel = document.getElementById('settings-panel');
   
-  // Длительность затухания в секундах
-  const fadeDuration = 2; 
-
   if (!isAudioStarted) {
     // ПЕРВЫЙ ЗАПУСК
     initAudio().then(() => {
       isAudioStarted = true;
       isMuted = false;
-      
-      // Плавно поднимаем громкость до 0 dB
-      Tone.Destination.volume.rampTo(0, fadeDuration);
-      
       btn.innerText = "🔇 Fade Out";
       btn.classList.add("active");
       panel.classList.remove("settings-hidden");
       panel.classList.add("settings-visible");
+      
+      // Плавное появление (3 секунды) до 0 dB (нормальная громкость)
+      Tone.Destination.volume.rampTo(0, 3);
     });
   } else {
+    // ПЕРЕКЛЮЧЕНИЕ СОСТОЯНИЯ
     if (isMuted) {
-      // UNMUTE (Включение звука)
-      // Плавно поднимаем громкость
-      Tone.Destination.volume.rampTo(0, fadeDuration);
-      
+      // UNMUTE: Плавное включение
+      Tone.Destination.volume.rampTo(0, 3); // 3 секунды на возврат громкости
       isMuted = false;
       btn.innerText = "🔇 Fade Out";
       btn.classList.add("active");
-      panel.style.opacity = ""; // Сброс inline стилей, возвращаем управление классу
-      panel.style.pointerEvents = "";
+      // Разблокируем панель
+      panel.classList.remove("settings-hidden");
+      panel.classList.add("settings-visible");
     } else {
-      // MUTE (Выключение звука)
-      // Плавно опускаем громкость в тишину
-      Tone.Destination.volume.rampTo(-Infinity, fadeDuration);
-      
+      // MUTE: Плавное выключение
+      Tone.Destination.volume.rampTo(-Infinity, 2); // 2 секунды на затухание
       isMuted = true;
       btn.innerText = "🔈 Fade In";
       btn.classList.remove("active");
-      panel.style.opacity = "0.5";
-      panel.style.pointerEvents = "none";
+      // Прячем панель
+      panel.classList.remove("settings-visible");
+      panel.classList.add("settings-hidden");
     }
   }
 });
 
 // --- ОБРАБОТЧИКИ НАСТРОЕК ---
 
-// 1. Тип Ветра
 document.getElementById('type-wind').addEventListener('change', function(e) {
   if(noiseNode) noiseNode.type = e.target.value; 
 });
 
-// 2. Громкость Ветра
 document.getElementById('vol-wind').addEventListener('input', function(e) {
   if(noiseNode) noiseNode.volume.value = parseFloat(e.target.value);
 });
 
-// 3. Скорость Ветра
 document.getElementById('param-wind-speed').addEventListener('input', function(e) {
   if(autoFilterNode) {
     autoFilterNode.frequency.value = parseFloat(e.target.value);
   }
 });
 
-// 4. Глубина Ветра
 document.getElementById('param-wind-depth').addEventListener('input', function(e) {
   if(autoFilterNode) {
     autoFilterNode.octaves = parseFloat(e.target.value);
   }
 });
 
-// 5. Тип Синтезатора
 document.getElementById('type-synth').addEventListener('change', function(e) {
   if(synthNode) {
     synthNode.set({ oscillator: { type: e.target.value } });
   }
 });
 
-// 6. Громкость Синтезатора
 document.getElementById('vol-synth').addEventListener('input', function(e) {
   if(synthNode) synthNode.volume.value = parseFloat(e.target.value);
 });
 
-// 7. Плотность нот
 document.getElementById('param-density').addEventListener('input', function(e) {
   chimeDensity = parseFloat(e.target.value);
 });

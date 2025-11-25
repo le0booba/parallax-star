@@ -8,7 +8,6 @@ html, body {
   font-family: "lato", sans-serif;
 }
 
-/* --- Заголовок --- */
 #title {
   position: absolute;
   top: 30px;
@@ -32,7 +31,6 @@ html, body {
   pointer-events: auto;
 }
 
-/* --- Аудио кнопка --- */
 #audio-control-container {
   margin-top: 20px;
   margin-bottom: 20px;
@@ -76,14 +74,19 @@ html, body {
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.1);
   
-  /* 3D Переходы */
-  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Настройки анимации трансформации */
+  transition: 
+    opacity 0.6s ease, 
+    transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), /* Плавный "пружинящий" эффект */
+    border-color 0.3s ease;
   
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   pointer-events: auto;
   
-  /* Адаптивность */
+  /* Важно: точка трансформации сверху по центру */
+  transform-origin: top center;
+  
   box-sizing: border-box;
   width: 320px;
   max-width: 90vw; 
@@ -94,37 +97,29 @@ html, body {
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
-/* 
-   СОСТОЯНИЕ ПОКОЯ (Idle):
-   - rotateX(45deg) = Сильный наклон назад (в 3 раза больше чем 15deg)
-   - scale(0.9) = Чуть меньше визуально
-*/
+/* Состояние ПОКОЯ (когда мышь НЕ наведена) */
 .settings-visible {
-  opacity: 0.8; 
+  opacity: 0.5; /* Полупрозрачность */
   pointer-events: auto;
-  transform: perspective(1000px) rotateX(45deg) translateY(0) scale(0.9);
-  transform-origin: top center; /* Вращение от верха */
+  /* Сильное уменьшение (0.35) и наклон */
+  transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.35);
 }
 
-/* 
-   СОСТОЯНИЕ НАВЕДЕНИЯ (Hover):
-   - Выпрямляется в 0 градусов
-*/
+/* Состояние АКТИВНОСТИ (когда мышь НАВЕДЕНА) */
 #settings-panel.settings-visible:hover {
   opacity: 1;
+  /* Возврат к полному размеру */
   transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
   border-color: rgba(255,255,255,0.4);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
 }
 
-/* Состояние скрытия */
 .settings-hidden {
   opacity: 0;
   pointer-events: none !important;
-  transform: translateY(30px) !important; 
+  transform: translateY(30px) scale(0.35) !important; 
 }
 
-/* Скроллбар */
 #settings-panel::-webkit-scrollbar { width: 6px; }
 #settings-panel::-webkit-scrollbar-track { background: transparent; }
 #settings-panel::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.3); border-radius: 10px; }
@@ -141,7 +136,6 @@ html, body {
   margin-bottom: 8px;
 }
 
-/* Элементы формы */
 select {
   width: 100%;
   background: rgba(255,255,255,0.1);
@@ -156,13 +150,11 @@ select {
 }
 select option { background: #1b2735; color: #fff; }
 
-/* --- Range Slider --- */
 input[type=range] {
   -webkit-appearance: none; 
   width: 100%; 
   background: transparent; 
 }
-
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
   height: 24px;
@@ -173,7 +165,6 @@ input[type=range]::-webkit-slider-thumb {
   margin-top: -11px; 
   box-shadow: 0 0 10px #fff;
 }
-
 input[type=range]::-webkit-slider-runnable-track {
   width: 100%;
   height: 2px;
@@ -181,10 +172,8 @@ input[type=range]::-webkit-slider-runnable-track {
   background: rgba(255,255,255,0.2);
   border-radius: 1px;
 }
-
 input[type=range]:focus { outline: none; }
 
-/* Звезды и анимация */
 #stars, #stars2, #stars3 {
   position: absolute;
   top: 0;
@@ -195,7 +184,6 @@ input[type=range]:focus { outline: none; }
   height: 1px;
   background: transparent;
 }
-
 #stars:after, #stars2:after, #stars3:after {
   content: " ";
   position: absolute;
@@ -206,7 +194,6 @@ input[type=range]:focus { outline: none; }
 }
 
 @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
-
 #stars { animation: animStar 50s linear infinite; }
 #stars2 { animation: animStar 100s linear infinite; }
 #stars3 { animation: animStar 150s linear infinite; }

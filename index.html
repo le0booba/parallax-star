@@ -8,12 +8,10 @@
   <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
-  <!-- Подключаем Tone.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
   
 <body>
-  <!-- Контейнеры звезд (стили генерируются в JS) -->
   <div id='stars'></div>
   <div id='stars2'></div>
   <div id='stars3'></div>
@@ -27,15 +25,12 @@
       CINCYVAKA
     </span>
     
-    <!-- Кнопка включения -->
     <div id="audio-control-container">
       <button id="btn-audio" class="audio-btn">🔈 Start Experience</button>
     </div>
 
-    <!-- Панель настроек -->
     <div id="settings-panel" class="settings-hidden">
       
-      <!-- 1. Настройки Атмосферы -->
       <div class="control-group">
         <label>Atmosphere Type</label>
         <select id="type-wind">
@@ -50,7 +45,6 @@
         <input type="range" id="vol-wind" min="-60" max="-5" value="-20">
       </div>
 
-      <!-- Сверхмедленный диапазон -->
       <div class="control-group">
         <label>Turbulence (Speed)</label>
         <input type="range" id="param-wind-speed" min="0.001" max="0.5" step="0.001" value="0.1">
@@ -63,7 +57,6 @@
 
       <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
 
-      <!-- 2. Настройки Звезд -->
       <div class="control-group">
         <label>Starlight Sound</label>
         <select id="type-synth">
