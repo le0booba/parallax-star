@@ -2,46 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Parallax Star background with Generative Audio</title>
-  
-  <!-- Сброс стилей -->
+  <title>CINVA - Generative Soundscape</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-  
-  <!-- Шрифт Lato -->
   <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-  
-  <!-- Наши стили (вынесены в отдельный файл) -->
   <link rel="stylesheet" href="style.css">
-  
-  <!-- PrefixFree -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
-  
-  <!-- Библиотека Tone.js для генерации звука -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 </head>
   
 <body>
-  <!-- Слои звезд -->
   <div id='stars'></div>
   <div id='stars2'></div>
   <div id='stars3'></div>
   
-  <!-- Заголовок -->
   <div id='title'>
-    <span>PURE CSS</span>
+    <span>
+      CINVA
+    </span>
     <br>
-    <span>PARALLAX PIXEL STARS</span>
+    <span>
+      CINCYVAKA
+    </span>
     
-    <!-- Кнопка управления звуком -->
+    <!-- Кнопка включения -->
     <div id="audio-control-container">
-      <button id="btn-audio" class="audio-btn">🔈 Enable Cosmic Ambience</button>
+      <button id="btn-audio" class="audio-btn">🔈 Start Experience</button>
+    </div>
+
+    <!-- Панель настроек (скрыта до включения) -->
+    <div id="settings-panel" class="settings-hidden">
+      
+      <div class="control-group">
+        <label>Atmosphere (Wind)</label>
+        <input type="range" id="vol-wind" min="-60" max="0" value="-20">
+      </div>
+
+      <div class="control-group">
+        <label>Starlight (Chimes)</label>
+        <input type="range" id="vol-synth" min="-60" max="-5" value="-12">
+      </div>
+
+      <div class="control-group">
+        <label>Density (Activity)</label>
+        <input type="range" id="param-density" min="0" max="1" step="0.05" value="0.4">
+      </div>
+
     </div>
   </div>
 
-  <!-- jQuery (оставлено для совместимости, если нужно) -->
   <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
-  
-  <!-- Наша логика (вынесена в отдельный файл) -->
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,91 +1,119 @@
 /*
-  Generative Audio script using Tone.js
-  Concepts:
-  1. Space Drone (Wind) using filtered Noise.
-  2. Star Twinkles (Chimes) using PolySynth with random loop.
+  CINVA Generative Audio
+  Based on Tone.js
 */
 
 let isAudioStarted = false;
 
-// Основная функция запуска аудио
-async function initAudio() {
-  await Tone.start(); // Разрешаем браузеру проигрывание
-  console.log("Audio is ready");
+// Глобальные переменные для доступа из ползунков
+let noiseNode;
+let synthNode;
+let chimeDensity = 0.4; // Вероятность звучания ноты (40%)
 
-  // --- 1. Слой атмосферы (Космический ветер) ---
-  // Создаем "Розовый шум" (похож на ветер или водопад)
+async function initAudio() {
+  await Tone.start();
+  console.log("Audio Context Started");
+
+  // --- 1. ATMOSPHERE (Wind / Drone) ---
   const noise = new Tone.Noise("pink");
-  
-  // Авто-фильтр заставляет звук "плавать" влево-вправо и менять частоту
   const autoFilter = new Tone.AutoFilter({
-    frequency: "8m", // Очень медленная модуляция (8 тактов)
+    frequency: "8m",
     baseFrequency: 200,
     octaves: 2.6
   }).toDestination();
   
-  // Подключаем шум к фильтру и понижаем громкость
   noise.connect(autoFilter);
-  noise.volume.value = -20; // Тихий фон
+  noise.volume.value = document.getElementById("vol-wind").value; // Берем стартовое значение
   autoFilter.start();
   noise.start();
+  
+  // Сохраняем ссылку для управления
+  noiseNode = noise;
 
 
-  // --- 2. Слой звезд (Перезвон) ---
-  // Эффект реверберации (эхо) для космоса
+  // --- 2. STARLIGHT (Chimes) ---
   const reverb = new Tone.Reverb({
-    decay: 5, // Длинное эхо
-    wet: 0.5
+    decay: 10,
+    wet: 0.6
   }).toDestination();
 
-  // Синтезатор для звуков
   const synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: "sine" }, // Мягкая волна
+    oscillator: { type: "fatsine" }, // Более насыщенный звук
     envelope: {
-      attack: 0.05,
-      decay: 0.1,
-      sustain: 0.1,
-      release: 3 // Очень длинное затухание
+      attack: 0.02,
+      decay: 0.3,
+      sustain: 0,
+      release: 3
     }
   }).connect(reverb);
   
-  synth.volume.value = -12;
+  synth.volume.value = document.getElementById("vol-synth").value; // Берем стартовое значение
+  
+  // Сохраняем ссылку для управления
+  synthNode = synth;
 
-  // Музыкальная гамма (Минорная пентатоника для загадочности)
-  const scale = ["C4", "D4", "Eb4", "G4", "A4", "C5", "D5", "Eb5"];
+  const scale = ["C4", "D4", "Eb4", "G4", "A4", "C5", "D5", "Eb5", "G5"];
 
-  // Бесконечный цикл, который играет случайную ноту
   const loop = new Tone.Loop(time => {
-    // 30% шанс, что нота сыграет в этот такт (чтобы не было слишком часто)
-    if (Math.random() < 0.4) {
+    // Используем динамическую переменную плотности
+    if (Math.random() < chimeDensity) {
       const note = scale[Math.floor(Math.random() * scale.length)];
       synth.triggerAttackRelease(note, "8n", time);
     }
-  }, "4n"); // Проверка каждые пол-секунды (четвертная нота)
+  }, "4n"); 
 
   Tone.Transport.start();
   loop.start(0);
 }
 
-// Обработка кнопки
+// Обработка кнопки включения
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
+  const panel = document.getElementById('settings-panel');
   
   if (!isAudioStarted) {
     initAudio().then(() => {
       isAudioStarted = true;
       btn.innerText = "🔇 Mute Audio";
       btn.classList.add("active");
+      // Показываем панель настроек
+      panel.classList.remove("settings-hidden");
+      panel.classList.add("settings-visible");
     });
   } else {
-    // Переключение Mute/Unmute
     if (Tone.Destination.mute) {
       Tone.Destination.mute = false;
       btn.innerText = "🔇 Mute Audio";
       btn.classList.add("active");
+      panel.style.opacity = "1";
+      panel.style.pointerEvents = "auto";
     } else {
       Tone.Destination.mute = true;
-      btn.innerText = "🔈 Enable Audio";
+      btn.innerText = "🔈 Resume Audio";
       btn.classList.remove("active");
+      panel.style.opacity = "0.5"; // Приглушаем панель
+      panel.style.pointerEvents = "none";
     }
   }
+});
+
+// --- СЛУШАТЕЛИ ПОЛЗУНКОВ (Sliders Logic) ---
+
+// 1. Громкость Ветра
+document.getElementById('vol-wind').addEventListener('input', function(e) {
+  if(noiseNode) {
+    noiseNode.volume.value = parseFloat(e.target.value);
+  }
+});
+
+// 2. Громкость Синтезатора
+document.getElementById('vol-synth').addEventListener('input', function(e) {
+  if(synthNode) {
+    synthNode.volume.value = parseFloat(e.target.value);
+  }
+});
+
+// 3. Плотность (Вероятность)
+document.getElementById('param-density').addEventListener('input', function(e) {
+  chimeDensity = parseFloat(e.target.value);
 });
