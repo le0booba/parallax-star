@@ -82,7 +82,6 @@ html, body {
   min-width: 280px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   pointer-events: auto;
-  
   transform-origin: top center;
   
   box-sizing: border-box;
@@ -95,7 +94,6 @@ html, body {
   scrollbar-color: rgba(255,255,255,0.3) transparent;
 }
 
-/* Состояние ПОКОЯ */
 .settings-visible {
   opacity: 0.5;
   pointer-events: auto;
@@ -103,12 +101,10 @@ html, body {
   transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.35);
 }
 
-/* Блокировка контента пока панель свернута */
 .settings-visible:not(.expanded) .panel-content {
   pointer-events: none; 
 }
 
-/* Состояние АКТИВНОСТИ (Hover или Class) */
 #settings-panel.settings-visible:hover,
 #settings-panel.settings-visible.expanded {
   opacity: 1;
@@ -143,6 +139,44 @@ html, body {
   text-transform: uppercase;
   color: rgba(255,255,255,0.7);
   margin-bottom: 8px;
+}
+
+.panel-divider {
+  border: 0; 
+  border-top: 1px solid rgba(255,255,255,0.1); 
+  margin: 15px 0;
+}
+
+/* --- МОБИЛЬНАЯ ОПТИМИЗАЦИЯ (Компактность) --- */
+@media (max-width: 768px) {
+  #settings-panel {
+    width: 280px; /* Чуть уже */
+    padding: 15px; /* Меньше внутренний отступ */
+  }
+
+  .settings-visible {
+    /* Увеличенный масштаб в свернутом виде для удобства нажатия */
+    transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.6);
+  }
+
+  .control-group {
+    margin-bottom: 8px; /* Уплотняем отступы между элементами */
+  }
+
+  .control-group label {
+    margin-bottom: 4px;
+    font-size: 9px; /* Чуть меньше шрифт */
+  }
+
+  .panel-divider {
+    margin: 8px 0; /* Меньше отступ у линии */
+  }
+  
+  /* Кнопка аудио поменьше на мобильных */
+  .audio-btn {
+    padding: 10px 20px;
+    font-size: 10px;
+  }
 }
 
 select {
@@ -183,54 +217,9 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 input[type=range]:focus { outline: none; }
 
-/* Анимация звезд */
-#stars, #stars2, #stars3 {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  width: 1px; height: 1px;
-  background: transparent;
-}
-#stars:after, #stars2:after, #stars3:after {
-  content: " ";
-  position: absolute;
-  top: 2000px;
-  width: 1px; height: 1px;
-  background: transparent;
-}
+#stars, #stars2, #stars3 { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 1px; height: 1px; background: transparent; }
+#stars:after, #stars2:after, #stars3:after { content: " "; position: absolute; top: 2000px; width: 1px; height: 1px; background: transparent; }
 @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
 #stars { animation: animStar 50s linear infinite; }
 #stars2 { animation: animStar 100s linear infinite; }
 #stars3 { animation: animStar 150s linear infinite; }
-
-/* --- МОБИЛЬНАЯ АДАПТАЦИЯ --- */
-@media (max-width: 768px) {
-  /* Масштаб в покое чуть больше, чтобы удобно тапать */
-  .settings-visible {
-    transform: perspective(1000px) rotateX(25deg) translateY(0) scale(0.6);
-  }
-  
-  /* Компактность в раскрытом состоянии */
-  #settings-panel {
-    padding: 15px; /* Уменьшенные поля */
-    width: 280px; /* Чуть уже */
-  }
-  
-  .control-group {
-    margin-bottom: 8px; /* Уменьшенный отступ между группами */
-  }
-  
-  .control-group label {
-    font-size: 9px; /* Чуть меньше шрифт */
-    margin-bottom: 4px;
-  }
-  
-  select {
-    padding: 4px 8px; /* Компактный селект */
-    font-size: 12px;
-  }
-  
-  /* Уменьшаем отступы у разделителя */
-  hr {
-    margin: 8px 0 !important;
-  }
-}

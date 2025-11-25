@@ -43,7 +43,7 @@ window.addEventListener('resize', () => {
 });
 
 
-// --- AUDIO ENGINE (Optimized for Mobile) ---
+// --- AUDIO ENGINE ---
 
 let isAudioStarted = false;
 let isMuted = false; 
@@ -53,10 +53,8 @@ let chimeDensity = 0.4;
 
 async function initAudio() {
   await Tone.start();
-  
-  // ИСПРАВЛЕНИЕ ТРЕСКА 1: Увеличиваем Lookahead (буфер предзагрузки)
-  // По умолчанию 0.03, увеличиваем до 0.1 для стабильности
-  Tone.context.lookAhead = 0.1;
+  // Настройка буферизации для уменьшения треска при нагрузке
+  Tone.context.lookAhead = 0.1; 
   
   Tone.Destination.volume.value = -60; 
   console.log("Audio Context Started");
@@ -94,10 +92,7 @@ async function initAudio() {
 
   const initialSynthType = document.getElementById("type-synth").value;
 
-  // ИСПРАВЛЕНИЕ ТРЕСКА 2: Ограничение полифонии (maxPolyphony)
-  // Ограничиваем до 4 голосов, чтобы снизить нагрузку на CPU телефона
   const synth = new Tone.PolySynth(Tone.Synth, {
-    maxPolyphony: 4, 
     oscillator: { type: initialSynthType }, 
     envelope: {
       attack: 0.02,
@@ -124,6 +119,23 @@ async function initAudio() {
   loop.start(0);
 }
 
+// --- ИСПРАВЛЕНИЕ ТРЕСКА НА МОБИЛЬНЫХ ---
+// Когда вкладка скрыта, мы ставим Transport на паузу.
+// Это предотвращает накопление буфера и "глитчи" при троттлинге CPU.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    if (isAudioStarted) {
+      Tone.Transport.pause();
+    }
+  } else {
+    // Если мы вернулись и звук был включен (не на Mute кнопке), возобновляем
+    if (isAudioStarted && !isMuted) {
+      Tone.Transport.start();
+    }
+  }
+});
+
+
 // --- Кнопка включения ---
 document.getElementById('btn-audio').addEventListener('click', function() {
   const btn = this;
@@ -141,6 +153,7 @@ document.getElementById('btn-audio').addEventListener('click', function() {
     });
   } else {
     if (isMuted) {
+      Tone.Transport.start(); // Убеждаемся, что транспорт запущен
       Tone.Destination.volume.rampTo(0, 3);
       isMuted = false;
       btn.innerText = "🔇 Fade Out";
@@ -155,11 +168,16 @@ document.getElementById('btn-audio').addEventListener('click', function() {
       panel.classList.remove("settings-visible");
       panel.classList.add("settings-hidden");
       panel.classList.remove("expanded");
+      
+      // Через 2 секунды (после фейда) можно запаузить транспорт для экономии ресурсов
+      setTimeout(() => {
+        if(isMuted) Tone.Transport.pause();
+      }, 2000);
     }
   }
 });
 
-// --- МОБИЛЬНАЯ ЛОГИКА ---
+// --- МОБИЛЬНАЯ ЛОГИКА: Клик по панели ---
 const settingsPanel = document.getElementById('settings-panel');
 
 settingsPanel.addEventListener('click', function(e) {
@@ -177,6 +195,7 @@ document.addEventListener('click', function(e) {
     panel.classList.remove('expanded');
   }
 });
+
 
 // --- ОБРАБОТЧИКИ ПАРАМЕТРОВ ---
 
