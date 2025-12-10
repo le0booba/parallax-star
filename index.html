@@ -3,11 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>CINVA - Ambient Experience</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#090a0f">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-  <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css?family=Lato:300,400&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
   <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
     html, body {
       width: 100%;
       height: 100%;
@@ -15,7 +22,9 @@
       padding: 0;
       background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
       overflow: hidden;
-      font-family: "lato", sans-serif;
+      font-family: "Lato", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     #title {
@@ -28,16 +37,19 @@
       font-weight: 300;
       font-size: 50px;
       letter-spacing: 10px;
-      margin-top: 0;
-      padding-left: 10px;
+      margin: 0;
+      padding: 0 10px;
       z-index: 100;
       pointer-events: none;
+      contain: layout style paint;
     }
 
     #title span {
-      background: -webkit-linear-gradient(white, #38495a);
+      background: linear-gradient(180deg, white, #38495a);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: inline-block;
     }
 
     #audio-controls {
@@ -54,20 +66,27 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
       padding: 12px 30px;
-      font-family: "lato", sans-serif;
+      font-family: "Lato", sans-serif;
       font-size: 12px;
       letter-spacing: 3px;
       cursor: pointer;
-      transition: all 0.4s ease;
+      transition: all 0.3s ease;
       border-radius: 50px;
       outline: none;
       text-transform: uppercase;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
     }
 
     .audio-btn:hover {
       background: rgba(255, 255, 255, 0.2);
       border-color: #fff;
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .audio-btn:active {
+      transform: scale(0.98);
     }
 
     .audio-btn.active {
@@ -82,7 +101,8 @@
       gap: 10px;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.3s ease;
+      contain: layout style paint;
     }
 
     .volume-control.visible {
@@ -102,6 +122,7 @@
       width: 150px; 
       background: transparent;
       cursor: pointer;
+      touch-action: none;
     }
 
     input[type=range]::-webkit-slider-thumb {
@@ -152,6 +173,10 @@
       width: 1px;
       height: 1px;
       background: transparent;
+      will-change: transform;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      contain: layout style paint;
     }
 
     #stars:after, #stars2:after, #stars3:after {
@@ -164,27 +189,49 @@
     }
 
     @keyframes animStar {
-      from { transform: translateY(0px); }
-      to { transform: translateY(-2000px); }
+      from { transform: translateY(0) translateZ(0); }
+      to { transform: translateY(-2000px) translateZ(0); }
     }
 
     #stars { animation: animStar 50s linear infinite; }
     #stars2 { animation: animStar 100s linear infinite; }
     #stars3 { animation: animStar 150s linear infinite; }
 
+    @media (prefers-reduced-motion: reduce) {
+      #stars, #stars2, #stars3 {
+        animation-duration: 200s;
+      }
+    }
+
     @media (max-width: 768px) {
       #title {
-        font-size: 30px;
-        letter-spacing: 5px;
+        font-size: 32px;
+        letter-spacing: 6px;
+        top: 20px;
       }
       
       .audio-btn {
-        padding: 10px 20px;
-        font-size: 10px;
+        padding: 10px 24px;
+        font-size: 11px;
       }
 
       input[type=range] {
-        width: 120px;
+        width: 130px;
+      }
+
+      #audio-controls {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #title {
+        font-size: 28px;
+        letter-spacing: 4px;
+      }
+
+      input[type=range] {
+        width: 110px;
       }
     }
   </style>
@@ -211,34 +258,32 @@
   </div>
 
   <script>
-    // --- ГЕНЕРАЦИЯ ЗВЕЗД ---
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
     function generateStars() {
       const width = window.innerWidth; 
-      const height = 2000; 
+      const height = 2000;
+      
+      const starCounts = isMobile ? [400, 120, 60] : [700, 200, 100];
       
       const createShadows = (count) => {
-        let shadows = [];
+        const shadows = [];
         for (let i = 0; i < count; i++) {
-          const x = Math.floor(Math.random() * width);
-          const y = Math.floor(Math.random() * height);
-          shadows.push(`${x}px ${y}px #FFF`);
+          shadows.push(`${Math.floor(Math.random() * width)}px ${Math.floor(Math.random() * height)}px #FFF`);
         }
-        return shadows.join(', ');
+        return shadows.join(',');
       };
 
       const oldStyle = document.getElementById('dynamic-star-style');
       if (oldStyle) oldStyle.remove();
 
-      const smallStars = createShadows(700);
-      const mediumStars = createShadows(200);
-      const bigStars = createShadows(100);
-
       const style = document.createElement('style');
       style.id = 'dynamic-star-style';
-      style.innerHTML = `
-        #stars, #stars:after { box-shadow: ${smallStars}; width: 1px; height: 1px; }
-        #stars2, #stars2:after { box-shadow: ${mediumStars}; width: 2px; height: 2px; }
-        #stars3, #stars3:after { box-shadow: ${bigStars}; width: 3px; height: 3px; }
+      style.textContent = `
+        #stars,#stars:after{box-shadow:${createShadows(starCounts[0])};width:1px;height:1px}
+        #stars2,#stars2:after{box-shadow:${createShadows(starCounts[1])};width:2px;height:2px}
+        #stars3,#stars3:after{box-shadow:${createShadows(starCounts[2])};width:3px;height:3px}
       `;
       document.head.appendChild(style);
     }
@@ -248,58 +293,43 @@
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(generateStars, 500);
-    });
+      resizeTimer = setTimeout(generateStars, 300);
+    }, { passive: true });
 
-    // --- HOWLER.JS AUDIO ---
     let sound = null;
     let isPlaying = false;
 
-    // Инициализация звука
     function initSound() {
       sound = new Howl({
-        src: ['https://files.catbox.moe/pthf7s.mp3', 'ambient.ogg'], // Fallback для разных браузеров
+        src: ['https://files.catbox.moe/pthf7s.mp3'],
         loop: true,
         volume: 0.7,
-        html5: true, // Стриминг вместо предзагрузки (экономия памяти)
-        onload: function() {
-          console.log('Audio loaded successfully');
-        },
-        onloaderror: function(id, error) {
+        html5: true,
+        preload: isMobile ? false : 'metadata',
+        onload: () => console.log('Audio loaded'),
+        onloaderror: (id, error) => {
           console.error('Error loading audio:', error);
           alert('Could not load audio file. Please check if ambient.mp3 exists.');
         },
-        onplayerror: function(id, error) {
-          console.error('Error playing audio:', error);
-          sound.once('unlock', function() {
-            sound.play();
-          });
+        onplayerror: () => {
+          sound.once('unlock', () => sound.play());
         }
       });
     }
 
-    // Элементы управления
     const playBtn = document.getElementById('play-btn');
     const volumeControl = document.getElementById('volume-control');
     const volumeSlider = document.getElementById('volume-slider');
 
-    // Кнопка Play/Pause
     playBtn.addEventListener('click', function() {
-      if (!sound) {
-        initSound();
-      }
+      if (!sound) initSound();
 
       if (!isPlaying) {
-        // Запуск с fade-in
         const targetVolume = volumeSlider.value / 100;
         sound.volume(0);
         
-        // Проверяем, нужно ли запустить заново
-        if (!sound.playing()) {
-          sound.play();
-        }
+        if (!sound.playing()) sound.play();
         
-        // Немедленно запускаем fade
         setTimeout(() => {
           sound.fade(0, targetVolume, 2000);
         }, 50);
@@ -309,15 +339,11 @@
         playBtn.classList.add('active');
         volumeControl.classList.add('visible');
       } else {
-        // Остановка с fade-out
         const currentVol = sound.volume();
         sound.fade(currentVol, 0, 1000);
         
-        // Останавливаем после завершения fade
         setTimeout(() => {
-          if (!isPlaying) { // Проверяем, что пользователь не нажал Start снова
-            sound.pause();
-          }
+          if (!isPlaying) sound.pause();
         }, 1100);
         
         isPlaying = false;
@@ -325,25 +351,36 @@
         playBtn.classList.remove('active');
         volumeControl.classList.remove('visible');
       }
-    });
+    }, { passive: true });
 
-    // Контроль громкости
     volumeSlider.addEventListener('input', function() {
-      if (sound) {
-        sound.volume(this.value / 100);
-      }
-    });
+      if (sound) sound.volume(this.value / 100);
+    }, { passive: true });
 
-    // Автоматическая пауза при потере фокуса (экономия ресурсов)
     document.addEventListener('visibilitychange', function() {
       if (sound && isPlaying) {
         if (document.hidden) {
-          sound.fade(sound.volume(), 0.2, 500); // Приглушаем в фоне
+          sound.fade(sound.volume(), 0.2, 500);
         } else {
           sound.fade(sound.volume(), volumeSlider.value / 100, 500);
         }
       }
-    });
+    }, { passive: true });
+
+    if ('getBattery' in navigator) {
+      navigator.getBattery().then(battery => {
+        function updateAudioQuality() {
+          if (battery.charging) return;
+          
+          if (battery.level < 0.2 && sound && isPlaying) {
+            sound.volume(Math.min(sound.volume(), 0.4));
+          }
+        }
+        
+        battery.addEventListener('levelchange', updateAudioQuality);
+        battery.addEventListener('chargingchange', updateAudioQuality);
+      });
+    }
   </script>
 </body>
 </html>
