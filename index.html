@@ -258,7 +258,7 @@
     // Инициализация звука
     function initSound() {
       sound = new Howl({
-        src: ['https://files.catbox.moe/pthf7s.mp3'], // Fallback для разных браузеров
+        src: ['https://files.catbox.moe/pthf7s.mp3', 'ambient.ogg'], // Fallback для разных браузеров
         loop: true,
         volume: 0.7,
         html5: true, // Стриминг вместо предзагрузки (экономия памяти)
@@ -292,19 +292,34 @@
       if (!isPlaying) {
         // Запуск с fade-in
         const targetVolume = volumeSlider.value / 100;
-        sound.volume(0); // Явно устанавливаем громкость в 0 перед запуском
-        sound.play();
-        sound.fade(0, targetVolume, 2000); // Плавное нарастание 2 секунды
+        sound.volume(0);
+        
+        // Проверяем, нужно ли запустить заново
+        if (!sound.playing()) {
+          sound.play();
+        }
+        
+        // Немедленно запускаем fade
+        setTimeout(() => {
+          sound.fade(0, targetVolume, 2000);
+        }, 50);
+        
         isPlaying = true;
         playBtn.textContent = '🔇 Pause';
         playBtn.classList.add('active');
         volumeControl.classList.add('visible');
       } else {
         // Остановка с fade-out
-        sound.fade(sound.volume(), 0, 1000); // Плавное затухание 1 секунда
+        const currentVol = sound.volume();
+        sound.fade(currentVol, 0, 1000);
+        
+        // Останавливаем после завершения fade
         setTimeout(() => {
-          sound.pause();
-        }, 1000);
+          if (!isPlaying) { // Проверяем, что пользователь не нажал Start снова
+            sound.pause();
+          }
+        }, 1100);
+        
         isPlaying = false;
         playBtn.textContent = '🔈 Start Experience';
         playBtn.classList.remove('active');
